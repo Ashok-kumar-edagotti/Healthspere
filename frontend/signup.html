@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup - Health Awareness Program</title>
+  <style>
+    :root {
+      --neon-blue: #00ffff;
+      --neon-magenta: #ff00ff;
+      --dark-charcoal: #0d0d0d;
+      --medium-dark: #1a1a1a;
+      --font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-family);
+      margin: 0;
+      background: linear-gradient(135deg, var(--dark-charcoal), #111);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .signup-container {
+      background: var(--medium-dark);
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 0 25px var(--neon-blue), 0 0 15px var(--neon-magenta);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      color: var(--neon-blue);
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 8px var(--neon-blue);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input, select {
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 1rem;
+      color: #fff;
+      background: #111;
+      border: 1px solid var(--neon-magenta);
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      box-shadow: 0 0 10px var(--neon-blue);
+      border-color: var(--neon-blue);
+    }
+
+    button {
+      background: var(--neon-magenta);
+      border: none;
+      color: #fff;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background: var(--neon-blue);
+      color: var(--dark-charcoal);
+      box-shadow: 0 0 15px var(--neon-blue);
+    }
+
+    .message {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    .message a {
+      color: var(--neon-magenta);
+      text-decoration: none;
+    }
+
+    .message a:hover {
+      text-decoration: underline;
+    }
+
+    .error, .success {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+
+    .error {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff8080;
+    }
+
+    .success {
+      background: rgba(0, 255, 0, 0.2);
+      color: #80ff80;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h1>Create Account</h1>
+
+    <form id="signupForm">
+      <input type="text" id="full_name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      
+      <select id="role" required>
+        <option value="">Select Role</option>
+        <option value="user">User</option>
+        <option value="health_worker">Health Worker</option>
+      </select>
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div id="messageBox"></div>
+
+    <p class="message">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById('signupForm');
+    const messageBox = document.getElementById('messageBox');
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageBox.innerHTML = '';
+
+      const full_name = document.getElementById('full_name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const role = document.getElementById('role').value;
+
+      if (!full_name || !email || !username || !password || !role) {
+        messageBox.innerHTML = '<div class="error">Please fill all fields.</div>';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name, email, username, password, role })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageBox.innerHTML = '<div class="success">Signup successful! Redirecting...</div>';
+          setTimeout(() => (window.location.href = 'login.html'), 1500);
+        } else {
+          messageBox.innerHTML = `<div class="error">${data.message || 'Signup failed. Try again.'}</div>`;
+        }
+      } catch (err) {
+        console.error(err);
+        messageBox.innerHTML = '<div class="error">Server error. Please try again later.</div>';
+      }
+    });
+  </script>
+</body>
+</html>

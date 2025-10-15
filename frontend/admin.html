@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Health Awareness</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon-blue: #00ffff;
+      --neon-magenta: #ff00ff;
+      --dark-bg: #1a1a2e;
+      --dark-card: #25253d;
+      --text-light: #f0f0f0;
+      --text-dark: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+    body { background-color: var(--dark-bg); color: var(--text-light); display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px; background-color: var(--dark-card); padding: 20px; display: flex; flex-direction: column;
+    }
+    .sidebar h2 { color: var(--neon-magenta); margin-bottom: 30px; text-align: center; }
+    .sidebar a {
+      color: var(--text-light); text-decoration: none; margin-bottom: 15px; padding: 10px; border-radius: 8px;
+      transition: 0.3s; display: block;
+    }
+    .sidebar a:hover { background-color: var(--neon-blue); color: var(--dark-bg); }
+
+    /* Main Content */
+    .main { flex: 1; padding: 20px; overflow-y: auto; }
+    h1 { color: var(--neon-magenta); margin-bottom: 20px; }
+
+    /* Cards */
+    .cards { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+    .card {
+      background-color: var(--dark-card); padding: 20px; border-radius: 12px; flex: 1;
+      min-width: 150px; text-align: center; box-shadow: 0 0 15px rgba(0,255,255,0.2);
+    }
+    .card h3 { margin-bottom: 10px; color: var(--neon-blue); }
+    .card p { font-size: 1.5em; font-weight: bold; }
+
+    /* Tables */
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 20px;
+      box-shadow: 0 0 15px rgba(255,0,255,0.1);
+    }
+    th, td {
+      padding: 10px; text-align: left; border-bottom: 1px solid var(--neon-blue);
+    }
+    th { background-color: var(--neon-magenta); color: var(--dark-bg); }
+    tr:hover { background-color: rgba(0,255,255,0.1); }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="#" onclick="showSection('users')">Users</a>
+    <a href="#" onclick="showSection('surveys')">Surveys</a>
+    <a href="#" onclick="showSection('sessions')">Awareness Sessions</a>
+    <a href="#" onclick="showSection('checkups')">Health Checkups</a>
+    <a href="#" onclick="showSection('sanitation')">Sanitation</a>
+    <a href="#" onclick="showSection('impact')">Impact Feedback</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <h1>Health Awareness Dashboard</h1>
+
+    <!-- Cards -->
+    <div class="cards">
+      <div class="card"><h3>Users</h3><p id="userCount">0</p></div>
+      <div class="card"><h3>Surveys</h3><p id="surveyCount">0</p></div>
+      <div class="card"><h3>Sessions</h3><p id="sessionCount">0</p></div>
+      <div class="card"><h3>Checkups</h3><p id="checkupCount">0</p></div>
+      <div class="card"><h3>Sanitation</h3><p id="sanitationCount">0</p></div>
+      <div class="card"><h3>Impact</h3><p id="impactCount">0</p></div>
+    </div>
+
+    <!-- Tables Sections -->
+    <div id="sectionContent">
+      <!-- Table content will load here dynamically -->
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:5000/api"; // Change if deployed
+
+    async function fetchCount(endpoint) {
+      const res = await fetch(`${API_BASE}/${endpoint}`, { headers: { Authorization: "Bearer " + localStorage.getItem("token") } });
+      const data = await res.json();
+      return data.length || 0;
+    }
+
+    async function loadCounts() {
+      document.getElementById('userCount').innerText = await fetchCount('users');
+      document.getElementById('surveyCount').innerText = await fetchCount('surveys');
+      document.getElementById('sessionCount').innerText = await fetchCount('sessions');
+      document.getElementById('checkupCount').innerText = await fetchCount('checkups');
+      document.getElementById('sanitationCount').innerText = await fetchCount('sanitation');
+      document.getElementById('impactCount').innerText = await fetchCount('impact');
+    }
+
+    async function showSection(section) {
+      const sectionContent = document.getElementById('sectionContent');
+      sectionContent.innerHTML = `<h2>${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>Loading...</p>`;
+
+      const res = await fetch(`${API_BASE}/${section}`, { headers: { Authorization: "Bearer " + localStorage.getItem("token") } });
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        sectionContent.innerHTML = `<p>Error loading data</p>`;
+        return;
+      }
+
+      let html = `<table><tr>`;
+      // Table headers
+      Object.keys(data[0] || {}).forEach(key => { html += `<th>${key}</th>`; });
+      html += `</tr>`;
+      // Table rows
+      data.forEach(row => {
+        html += `<tr>`;
+        Object.values(row).forEach(val => { html += `<td>${val}</td>`; });
+        html += `</tr>`;
+      });
+      html += `</table>`;
+
+      sectionContent.innerHTML = html;
+    }
+
+    // Initialize
+    loadCounts();
+  </script>
+
+</body>
+</html>

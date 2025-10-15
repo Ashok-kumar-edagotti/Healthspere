@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Awareness App - Neon</title>
+  <style>
+    :root {
+      --neon-blue: #00ffff;
+      --neon-magenta: #ff00ff;
+      --dark-charcoal: #0d0d0d;
+      --medium-dark: #1a1a1a;
+      --font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-family);
+      margin: 0;
+      background: var(--dark-charcoal);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--medium-dark);
+      padding: 3rem;
+      border-radius: 15px;
+      box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-magenta);
+      width: 400px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 30px var(--neon-blue), 0 0 60px var(--neon-magenta);
+    }
+
+    h2 {
+      color: var(--neon-blue);
+      text-shadow: 0 0 5px var(--neon-blue);
+      margin-bottom: 1.5rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      text-align: left;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      color: var(--neon-magenta);
+      text-shadow: 0 0 3px var(--neon-magenta);
+    }
+
+    input, select {
+      margin: 0.5rem 0 1rem 0;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--neon-blue);
+      background: #111;
+      color: #fff;
+      width: 100%;
+      box-sizing: border-box;
+      transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--neon-magenta);
+      outline: none;
+      box-shadow: 0 0 10px var(--neon-magenta);
+    }
+
+    button {
+      background: none;
+      border: 2px solid var(--neon-blue);
+      padding: 0.8rem;
+      border-radius: 8px;
+      color: var(--neon-blue);
+      cursor: pointer;
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--neon-magenta);
+      color: var(--dark-charcoal);
+      box-shadow: 0 0 10px var(--neon-magenta), 0 0 20px var(--neon-blue);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background: #222;
+      color: #555;
+      border-color: #555;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 1.5rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      font-weight: 600;
+      color: var(--neon-magenta);
+      text-shadow: 0 0 3px var(--neon-magenta);
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: var(--neon-blue);
+      cursor: pointer;
+      margin-top: 1rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+
+    .toggle-btn:hover {
+      color: var(--neon-magenta);
+      text-shadow: 0 0 5px var(--neon-magenta);
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+    <form id="auth-form">
+      <label for="username" style="display:none;">Username</label>
+      <input type="text" id="username" placeholder="Username" style="display:none;">
+
+      <label for="full_name" style="display:none;">Full Name</label>
+      <input type="text" id="full_name" placeholder="Full Name" style="display:none;">
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="button" id="toggle-password" style="margin-top:0.5rem;">Show Password</button>
+
+      <label for="phone_number" style="display:none;">Phone Number</label>
+      <input type="tel" id="phone_number" placeholder="Phone Number" style="display:none;">
+
+      <label for="role" style="display:none;">Role</label>
+      <select id="role" style="display:none;">
+        <option value="">Select Role</option>
+        <option value="Admin">Admin</option>
+        <option value="Health_Worker">Health Worker</option>
+        <option value="User">User</option>
+      </select>
+
+      <button type="submit" id="submit-btn">
+        <span id="button-text">Login</span>
+        <div id="loader" class="spinner hidden"></div>
+      </button>
+      <button type="button" class="toggle-btn" id="toggle-btn">Don't have an account? Signup</button>
+    </form>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const authForm = document.getElementById('auth-form');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const buttonText = document.getElementById('button-text');
+    const loader = document.getElementById('loader');
+    const message = document.getElementById('message');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('toggle-password');
+
+    const BASE_URL = 'http://localhost:5000/api/auth';
+    let isLogin = true;
+
+    const toggleForm = () => {
+      isLogin = !isLogin;
+      if(isLogin) {
+        formTitle.textContent = 'Login';
+        buttonText.textContent = 'Login';
+        toggleBtn.textContent = "Don't have an account? Signup";
+        document.getElementById('username').style.display = 'none';
+        document.getElementById('full_name').style.display = 'none';
+        document.getElementById('phone_number').style.display = 'none';
+        document.getElementById('role').style.display = 'none';
+      } else {
+        formTitle.textContent = 'Signup';
+        buttonText.textContent = 'Signup';
+        toggleBtn.textContent = "Already have an account? Login";
+        document.getElementById('username').style.display = 'block';
+        document.getElementById('full_name').style.display = 'block';
+        document.getElementById('phone_number').style.display = 'block';
+        document.getElementById('role').style.display = 'block';
+      }
+      message.textContent = '';
+      authForm.reset();
+    };
+
+    toggleBtn.addEventListener('click', toggleForm);
+
+    togglePasswordBtn.addEventListener('click', () => {
+      if(passwordInput.type === 'password'){
+        passwordInput.type = 'text';
+        togglePasswordBtn.textContent = 'Hide Password';
+      } else {
+        passwordInput.type = 'password';
+        togglePasswordBtn.textContent = 'Show Password';
+      }
+    });
+
+    const showLoading = (text) => {
+      submitBtn.disabled = true;
+      buttonText.textContent = text;
+      loader.classList.remove('hidden');
+    };
+
+    const hideLoading = (originalText) => {
+      submitBtn.disabled = false;
+      buttonText.textContent = originalText;
+      loader.classList.add('hidden');
+    };
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      message.textContent = '';
+
+      const data = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value.trim()
+      };
+
+      let url = `${BASE_URL}/login`;
+      let action = 'Login';
+
+      if(!isLogin) {
+        const username = document.getElementById('username').value.trim();
+        const full_name = document.getElementById('full_name').value.trim();
+        const phone_number = document.getElementById('phone_number').value.trim();
+        const role = document.getElementById('role').value;
+
+        if(!username || !full_name || !phone_number || !role) {
+          message.textContent = '❌ Please fill all required signup fields.';
+          return;
+        }
+
+        data.username = username;
+        data.full_name = full_name;
+        data.phone_number = phone_number;
+        data.role = role;
+        url = `${BASE_URL}/signup`;
+        action = 'Signup';
+      }
+
+      showLoading(isLogin ? 'Logging In...' : 'Signing Up...');
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(res.ok) {
+          message.style.color = '#00ffff';
+          if(isLogin) {
+            const { username, role } = result.user;
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('role', role);
+            localStorage.setItem('username', username);
+
+            if(role === 'Admin') window.location.href = 'admin.html';
+            else if(role === 'Health_Worker') window.location.href = 'health_worker.html';
+            else if(role === 'User') window.location.href = 'user.html';
+            else message.textContent = '⚠️ Unknown role. Cannot redirect.';
+          } else {
+            message.textContent = '✅ Signup successful! Please log in now.';
+            toggleForm();
+          }
+        } else {
+          message.style.color = '#ff00ff';
+          message.textContent = `❌ ${result.message}`;
+        }
+      } catch (err) {
+        console.error(err);
+        message.style.color = '#ff00ff';
+        message.textContent = '⚠️ Error connecting to server. Please try again.';
+      } finally {
+        hideLoading(action);
+      }
+    });
+  </script>
+</body>
+</html>

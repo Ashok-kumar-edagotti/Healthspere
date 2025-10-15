@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard - Health Awareness</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --neon-blue: #00ffff;
+      --neon-magenta: #ff00ff;
+      --dark-charcoal: #0d0d0d;
+      --medium-dark: #1a1a1a;
+      --font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background: var(--dark-charcoal);
+      color: #fff;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--medium-dark);
+      border-right: 1px solid var(--neon-blue);
+      box-shadow: 0 0 15px var(--neon-blue);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .sidebar h2 {
+      color: var(--neon-blue);
+      text-align: center;
+      font-size: 1.3rem;
+      text-shadow: 0 0 5px var(--neon-blue);
+      margin-bottom: 1rem;
+    }
+
+    .sidebar button {
+      background: none;
+      border: 2px solid var(--neon-magenta);
+      border-radius: 8px;
+      color: var(--neon-magenta);
+      padding: 0.6rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .sidebar button:hover {
+      background: var(--neon-magenta);
+      color: var(--dark-charcoal);
+      box-shadow: 0 0 12px var(--neon-magenta);
+    }
+
+    /* Main Container */
+    .main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--neon-blue);
+      padding-bottom: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      color: var(--neon-blue);
+      text-shadow: 0 0 5px var(--neon-blue);
+      font-size: 1.8rem;
+    }
+
+    header button {
+      background: none;
+      border: 2px solid var(--neon-magenta);
+      border-radius: 6px;
+      color: var(--neon-magenta);
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    header button:hover {
+      background: var(--neon-magenta);
+      color: var(--dark-charcoal);
+      box-shadow: 0 0 10px var(--neon-magenta);
+    }
+
+    /* Stats Section */
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 250px;
+      background: var(--medium-dark);
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(0,255,255,0.2);
+      box-shadow: 0 0 15px var(--neon-blue);
+    }
+
+    .stat-card h3 {
+      color: var(--neon-magenta);
+      font-size: 1.1rem;
+    }
+
+    .stat-card p {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: var(--neon-blue);
+      margin: 0.5rem 0 0;
+    }
+
+    /* Section */
+    .section {
+      background: var(--medium-dark);
+      padding: 1.5rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,255,255,0.2);
+      box-shadow: 0 0 10px var(--neon-blue);
+    }
+
+    .section h2 {
+      color: var(--neon-magenta);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 4px var(--neon-magenta);
+    }
+
+    /* Findings */
+    .findings ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .findings li {
+      margin: 0.5rem 0;
+      padding-left: 1rem;
+      position: relative;
+      color: #ddd;
+    }
+
+    .findings li::before {
+      content: "⚕️";
+      position: absolute;
+      left: 0;
+    }
+
+    /* Chart */
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2rem 0;
+    }
+
+    canvas {
+      width: 400px !important;
+      height: 400px !important;
+      background: #111;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 0 20px var(--neon-blue);
+    }
+
+    /* Recommendations */
+    .recommendations ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .recommendations li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.6rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .toggle {
+      width: 45px;
+      height: 22px;
+      background: #555;
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .toggle::after {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      transition: 0.3s;
+    }
+
+    .toggle.active {
+      background: var(--neon-blue);
+    }
+
+    .toggle.active::after {
+      left: 24px;
+      background: var(--neon-magenta);
+    }
+
+    footer {
+      text-align: center;
+      color: #999;
+      padding-top: 1rem;
+      border-top: 1px solid var(--neon-blue);
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar">
+    <h2>Dashboard</h2>
+    <button>Overview</button>
+    <button>Findings</button>
+    <button>Outcomes</button>
+    <button>Recommendations</button>
+    <button id="logoutBtn">Logout</button>
+  </aside>
+
+  <main class="main">
+    <header>
+      <h1>Healthcare Awareness & Impact</h1>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <h3>People Reached</h3>
+        <p>450+</p>
+      </div>
+      <div class="stat-card">
+        <h3>Sessions Conducted</h3>
+        <p>15</p>
+      </div>
+      <div class="stat-card">
+        <h3>Hygiene Kits Distributed</h3>
+        <p>200+</p>
+      </div>
+    </div>
+
+    <!-- Findings -->
+    <div class="section findings">
+      <h2>Key Findings</h2>
+      <ul>
+        <li>Low Hygiene Awareness</li>
+        <li>Shyness about Menstrual Hygiene</li>
+        <li>Poor Knowledge of Disease Prevention</li>
+        <li>Mental Health Issues Hidden</li>
+        <li>Limited Clean Water</li>
+        <li>Rare Health Check-ups</li>
+      </ul>
+    </div>
+
+    <!-- Chart -->
+    <div class="section chart-container">
+      <canvas id="outcomeChart"></canvas>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section recommendations">
+      <h2>Recommendations</h2>
+      <ul>
+        <li>Hold Regular Health Camps <div class="toggle"></div></li>
+        <li>Provide Free/Low-Cost Hygiene Products <div class="toggle active"></div></li>
+        <li>Start Mental Health Counselling <div class="toggle"></div></li>
+      </ul>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="section conclusion">
+      <h2>Conclusion</h2>
+      <p>The program increased health awareness and encouraged better hygiene in the village community. 
+      Continued support and regular follow-ups will help sustain these improvements.</p>
+    </div>
+
+    <footer>
+      &copy; 2025 Health Awareness Program
+    </footer>
+  </main>
+
+  <script>
+    // Chart.js Doughnut Chart
+    const ctx = document.getElementById('outcomeChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Improved Hygiene', 'Mental Care Education', 'Mental Health Discussion', 'Clean Water Awareness'],
+        datasets: [{
+          data: [26, 40, 24, 10],
+          backgroundColor: ['#00ffff', '#ff00ff', '#00ffaa', '#8888ff'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#fff', font: { size: 14 } },
+            position: 'bottom'
+          }
+        },
+        layout: {
+          padding: 10
+        }
+      }
+    });
+
+    // Toggle switches
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
